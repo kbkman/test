@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
 	sigemptyset(&newmask);
 	sigaddset(&newmask, SIGINT);
 	sigaddset(&newmask, SIGQUIT);
+	printf("set proc mask\n");
 	if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0)
 	{
 		fprintf(stderr, "sigprocmask failed\n");
@@ -39,6 +40,7 @@ int main(int argc, char* argv[])
 	if (sigismember(&pendmask, SIGQUIT))
 		printf("SIGQUIT signal pending\n");
 
+	printf("unset proc mask\n");
 	if (sigprocmask(SIG_SETMASK, &oldmask, NULL) < 0)
 	{
 		fprintf(stderr, "sigprocmask failed\n");
