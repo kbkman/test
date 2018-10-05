@@ -32,6 +32,15 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	sigemptyset(&sac.sa_mask);
+	sac.sa_handler = sig_int;
+	sac.sa_flags = 0;
+	if (sigaction(SIGINT, &sac, NULL) < 0)
+	{
+		perror("sigaction:");
+		return 1;
+	}
+
 	printf("start sleep\n");
 	sleep(10);
 	printf("end sleep\n");
