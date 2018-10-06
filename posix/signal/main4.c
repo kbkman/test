@@ -28,6 +28,19 @@ int main(int argc, char* argv[])
 	else
 		printf("nanosleep complete\n");
 
+
+	if (clock_nanosleep(CLOCK_REALTIME, 0, &tms, &ret_tms) != 0)
+		perror("clock nanosleep");
+	else
+		printf("clock nanosleep complete\n");
+
+	
+	/*
+	if (clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tms, &ret_tms) != 0)
+		perror("clock nanosleep");
+	else
+		printf("clock nanosleep complete\n");
+	*/
 	return 0;
 }
 
