@@ -35,12 +35,18 @@ int main(int argc, char* argv[])
 		printf("clock nanosleep complete\n");
 
 	
-	/*
+	if (clock_gettime(CLOCK_REALTIME, &tms) == -1)
+	{
+		perror("clock gettime");
+		return 1;
+	}
+
+	tms.tv_sec += 5;
+	printf("last clock nanosleep start, tv_sec=%ld\n", tms.tv_sec);
 	if (clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tms, &ret_tms) != 0)
 		perror("clock nanosleep");
 	else
 		printf("clock nanosleep complete\n");
-	*/
 	return 0;
 }
 
