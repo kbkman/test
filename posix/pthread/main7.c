@@ -1,52 +1,26 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <pthread.h>
 #include <errno.h>
-
-pthread_mutex_t locker;
-int counter = 0;
 
 void* thread_fun(void* arg)
 {
 	int id = (int)(long)arg;
+	int oldstate;
+	//设置为不可取消
+	//pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
 	printf("thread fun start %d\n", id);
-
-	while (counter < 10000)
-	{
-		printf("counter=%d, tid=%d\n", counter, id);
-		if (pthread_mutex_trylock(&locker) == 0)
-		{
-			++counter;
-			pthread_mutex_unlock(&locker);
-		}
-		else
-		{
-			printf("try lock failed %d\n", id);
-		}
-	}
-
+	sleep(10);
+	//pthread_testcancel();//无取消点函数时，可使用pthread_testcancel函数
 	printf("thread fun end, %d\n", id);
 	return arg;
 }
 
 int main(int argc, char* argv[])
 {
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutex_init(&locker, &attr);
-	pthread_mutexattr_destroy(&attr);
-
-	printf("aaa\n");
-	pthread_mutex_lock(&locker);
-	printf("bbb\n");
-	pthread_mutex_lock(&locker);
-	printf("ccc\n");
-	pthread_mutex_unlock(&locker);
-	pthread_mutex_unlock(&locker);
-
-	pthread_t tid, tid2;
+	pthread_t tid;
 	int ret = pthread_create(&tid, NULL, thread_fun, (void*)1);
 	if (ret)
 	{
@@ -54,10 +28,23 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	pthread_t tid2;
 	ret = pthread_create(&tid2, NULL, thread_fun, (void*)2);
 	if (ret)
 	{
 		fprintf(stderr, "pthread create thread2 failed and return %d\n", ret);
+		return 1;
+	}
+
+	sleep(2);
+	if ((ret = pthread_cancel(tid) != 0))
+	{
+		fprintf(stderr, "pthread cancel error, %s\n", strerror(ret));
+		return 1;
+	}
+	if ((ret = pthread_cancel(tid2) != 0))
+	{
+		fprintf(stderr, "pthread cancel error, %s\n", strerror(ret));
 		return 1;
 	}
 
@@ -77,8 +64,6 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	printf("join thread2 ok, return %d\n", (int)(long)thread_ret);
-
-	pthread_mutex_destroy(&locker);
 	return 0;
 }
 

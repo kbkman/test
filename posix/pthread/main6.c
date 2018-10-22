@@ -4,49 +4,37 @@
 #include <pthread.h>
 #include <errno.h>
 
-pthread_mutex_t locker;
-int counter = 0;
+pthread_key_t thread_key;
+pthread_once_t init_done = PTHREAD_ONCE_INIT;
+
+void thread_init(void)
+{
+	if (pthread_key_create(&thread_key, NULL) != 0)
+	{
+		fprintf(stderr, "pthread_key_create error\n");
+		exit(1);
+	}
+}
 
 void* thread_fun(void* arg)
 {
+	pthread_once(&init_done, thread_init);
 	int id = (int)(long)arg;
+	pthread_setspecific(thread_key, arg);
+
 	printf("thread fun start %d\n", id);
-
-	while (counter < 10000)
+	for (int i = 0; i < 5; ++i)
 	{
-		printf("counter=%d, tid=%d\n", counter, id);
-		if (pthread_mutex_trylock(&locker) == 0)
-		{
-			++counter;
-			pthread_mutex_unlock(&locker);
-		}
-		else
-		{
-			printf("try lock failed %d\n", id);
-		}
+		printf("tid=%d, thread key value=%d\n", id, (int)(long)pthread_getspecific(thread_key));
+		sleep(1);
 	}
-
 	printf("thread fun end, %d\n", id);
 	return arg;
 }
 
 int main(int argc, char* argv[])
 {
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutex_init(&locker, &attr);
-	pthread_mutexattr_destroy(&attr);
-
-	printf("aaa\n");
-	pthread_mutex_lock(&locker);
-	printf("bbb\n");
-	pthread_mutex_lock(&locker);
-	printf("ccc\n");
-	pthread_mutex_unlock(&locker);
-	pthread_mutex_unlock(&locker);
-
-	pthread_t tid, tid2;
+	pthread_t tid;
 	int ret = pthread_create(&tid, NULL, thread_fun, (void*)1);
 	if (ret)
 	{
@@ -54,6 +42,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	pthread_t tid2;
 	ret = pthread_create(&tid2, NULL, thread_fun, (void*)2);
 	if (ret)
 	{
@@ -78,7 +67,7 @@ int main(int argc, char* argv[])
 	}
 	printf("join thread2 ok, return %d\n", (int)(long)thread_ret);
 
-	pthread_mutex_destroy(&locker);
+	pthread_key_delete(thread_key);
 	return 0;
 }
 
