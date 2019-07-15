@@ -1,16 +1,23 @@
 
 OUTPUT = hello world
-$(warning OUTPUT=$(OUTPUT))
+#$(warning OUTPUT=$(OUTPUT))
 
 ifndef OUTPUT
-  $(error undefined OUTPUT)
+  $(warning undefined OUTPUT)
 else
-  OUTPUT += end
+  #OUTPUT += end
   $(warning OUTPUT=$(OUTPUT))
 endif
 
+$(warning $(if $(findstring hello,$(OUTPUT)),yes,no))
+
 define test
 	@echo $1
+endef
+
+define getpid
+	@pidof $1 2>/dev/null || echo 0
+	-@pidof ssh
 endef
 
 all:
@@ -18,6 +25,7 @@ all:
 	echo $(OUTPUT)
 	$(call test,this is test first param)
 	$(warning this is warning)
+	$(call getpid,ddd)
 
 
 .PHONY: one all
