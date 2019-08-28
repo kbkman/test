@@ -17,6 +17,44 @@ func do_something() {
 }
 
 
+func foo(x int) bool {
+	switch {
+	case x >= 0 && x < 127 :
+		return true
+	case x >= 127 && x < 256 :
+		fallthrough
+	default :
+		return false
+	}
+
+}
+
+func foo2() int {
+	sum := 0
+	for i := 0; i < 100; i++ {
+		sum += i
+	}
+	return sum
+}
+
+func foo3() int {
+	sum := 0
+	i := 0
+	for {
+		if i >= 100 {
+			goto END
+		}
+
+		i++
+		sum += i
+
+	}
+	return sum
+
+END:
+	return 8888
+}
+
 func main() {
 	//defer fmt.Printf("end\n")
 
