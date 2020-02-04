@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/select.h>
-#error test
 
 void int_handler(int sig_no)
 {
